@@ -1,52 +1,60 @@
 #include <stdio.h>
 
+struct Process {
+    int pid;
+    int bt;
+    int at;
+    int wt;
+    int tat;
+    int completed;
+};
+
 int main() {
-    int n, i, j;
+    int n, completed = 0, current_time = 0;
+    float total_wt = 0, total_tat = 0;
 
     printf("Enter number of processes: ");
     scanf("%d", &n);
 
-    int processes[n], bt[n], wt[n], tat[n];
-    float total_wt = 0, total_tat = 0;
+    struct Process p[n];
 
-    printf("Enter burst times:\n");
-    for (i = 0; i < n; i++) {
-        printf("Process %d: ", i + 1);
-        scanf("%d", &bt[i]);
-        processes[i] = i + 1;
+    // Input arrival and burst times
+    for (int i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        printf("Enter Arrival Time and Burst Time for Process %d: ", p[i].pid);
+        scanf("%d %d", &p[i].at, &p[i].bt);
+        p[i].completed = 0;
     }
 
-    for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
-            if (bt[i] > bt[j]) {
-                int temp = bt[i];
-                bt[i] = bt[j];
-                bt[j] = temp;
-                temp = processes[i];
-                processes[i] = processes[j];
-                processes[j] = temp;
+    while (completed < n) {
+        int idx = -1, min_bt = 99999;
+
+        // Find process with min burst time among arrived and not completed
+        for (int i = 0; i < n; i++) {
+            if (p[i].at <= current_time && p[i].completed == 0 && p[i].bt < min_bt) {
+                min_bt = p[i].bt;
+                idx = i;
             }
+        }
+
+        if (idx != -1) {
+            p[idx].wt = current_time - p[idx].at;
+            p[idx].tat = p[idx].wt + p[idx].bt;
+            current_time += p[idx].bt;
+            p[idx].completed = 1;
+            completed++;
+
+            total_wt += p[idx].wt;
+            total_tat += p[idx].tat;
+        } else {
+            current_time++; // CPU idle
         }
     }
 
-    wt[0] = 0;
-    for (i = 1; i < n; i++) {
-        wt[i] = bt[i - 1] + wt[i - 1];
+    printf("\nProcess\tAT\tBT\tWT\tTAT\n");
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\n", p[i].pid, p[i].at, p[i].bt, p[i].wt, p[i].tat);
     }
-
-
-    for (i = 0; i < n; i++) {
-        tat[i] = bt[i] + wt[i];
-        total_wt += wt[i];
-        total_tat += tat[i];
-    }
-
-
-    printf("\nProcesses \t BurstTime \t WaitingTime \t TurnaroundTime\n");
-    for (i = 0; i < n; i++) {
-        printf(" %d \t\t %d \t\t %d \t\t %d\n", processes[i], bt[i], wt[i], tat[i]);
-    }
-
 
     printf("\nAverage Waiting Time = %.2f", total_wt / n);
     printf("\nAverage Turnaround Time = %.2f\n", total_tat / n);
