@@ -1,52 +1,64 @@
 #include <stdio.h>
-//FCFS
-int main() {
-    int n, i;
 
+int main() {
+    int n;
     printf("Enter number of processes: ");
     scanf("%d", &n);
 
-    int processes[n], bt[n], wt[n], tat[n],wtavg,tatavg;
+    int pid[n], bt[n], at[n], wt[n], tat[n];
     float total_wt = 0, total_tat = 0;
 
-
-    printf("Enter burst times:\n");
-    for (i = 0; i < n; i++) {
-        printf("Process %d: ", i + 1);
-        scanf("%d", &bt[i]);
-        processes[i] = i + 1;
+    // Input burst times and arrival times
+    for (int i = 0; i < n; i++) {
+        printf("Enter Arrival Time and Burst Time for Process %d: ", i + 1);
+        scanf("%d%d", &at[i], &bt[i]);
+        pid[i] = i + 1;
     }
 
+    // Sort by Arrival Time
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (at[i] > at[j]) {
+                // Swap arrival time
+                int temp = at[i];
+                at[i] = at[j];
+                at[j] = temp;
 
-     wt[0] = 0;
+                // Swap burst time
+                temp = bt[i];
+                bt[i] = bt[j];
+                bt[j] = temp;
 
-    for (i = 1; i < n; i++) {
-        wt[i] = bt[i - 1] + wt[i - 1];
-
+                // Swap process ID
+                temp = pid[i];
+                pid[i] = pid[j];
+                pid[j] = temp;
+            }
+        }
     }
 
+    // Calculate waiting time and turnaround time
+    int start_time = 0;
+    for (int i = 0; i < n; i++) {
+        if (start_time < at[i])
+            start_time = at[i];
 
-    for (i = 0; i < n; i++) {
-        tat[i] = bt[i] + wt[i];
+        wt[i] = start_time - at[i];
+        tat[i] = wt[i] + bt[i];
+        start_time += bt[i];
+
         total_wt += wt[i];
         total_tat += tat[i];
     }
 
-
-    printf("\nProcesses \t BurstTime \t TurnaroundTime \t WaitingTime\n");
-    for (i = 0; i < n; i++) {
-        printf(" %d \t\t %d \t\t %d \t\t %d\n", processes[i], bt[i], tat[i],wt[i]);
+    // Output
+    printf("\nProcess\tArrival\tBurst\tWaiting\tTurnaround\n");
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\n", pid[i], at[i], bt[i], wt[i], tat[i]);
     }
-
 
     printf("\nAverage Waiting Time = %.2f", total_wt / n);
     printf("\nAverage Turnaround Time = %.2f\n", total_tat / n);
 
     return 0;
 }
-
-
-
-
-
-
